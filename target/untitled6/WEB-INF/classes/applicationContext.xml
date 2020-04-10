@@ -5,7 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 <!--    加载properties文件-->
     <context:property-placeholder location="classpath:jdbc.properties"/>
-
+    <context:component-scan base-package="net.zqwzjs"/>
 <!--    配置数据源-->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
         <property name="driverClassName" value="${jdbc.driver}"/>
@@ -21,10 +21,24 @@
         <property name="typeAliasesPackage" value="net.zqwzjs.entity"/>
 <!--        扫描sql配置文件：mapper需要的xml文件-->
 <!--        <property name="mapperLocations" value="mapper/*.xml"/>-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <value>
+                            offsetAsPageNum=true
+                            rowBoundsWithCount=true
+                            pageSizeZero=true
+                            reasonable=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
     </bean>
 
 <!--    Mapper动态代理开发，扫描dao接口包-->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
 <!--        注入sqlSessionFactory-->
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
 <!--        给出需要扫描的Dao接口包-->
@@ -35,5 +49,55 @@
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
 
+    </bean>
+
+
+    <!-- 配置安全管理器securityManager， 缓存技术: 缓存管理 realm:负责获取处理数据 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="myShiroRealm" />
+        <property name="cacheManager" ref="cacheManager" />
+
+    </bean>
+
+    <!-- 項目自定义的Realm,从数据库中获取用户的安全数据 -->
+    <bean id="myShiroRealm" class="net.zqwzjs.realms.UserRealm">
+        <!-- 配置缓存管理器-->
+        <property name="cacheManager" ref="cacheManager" />
+        <!-- 配置加密器 -->
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="MD5"></property> <!-- 加密算法的名称 -->
+                <property name="hashIterations" value="1024"></property> <!-- 配置加密的次数 -->
+            </bean>
+        </property>
+    </bean>
+
+    <!-- 用户授权信息Cache -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager" />
+
+    <!-- 必须配置lifecycleBeanPostProcessor:管理shiro中常见的对象 -->
+    <!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+    <!-- shiro的核心配置:  配置shiroFileter id名必须与web.xml中的filtername保持一致 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager" />
+        <property name="loginUrl" value="/toPage/login" />
+        <property name="successUrl" value="/index.jsp" />
+        <property name="unauthorizedUrl" value="/toPage/unauthorized" />
+        <!-- shiro过滤器的具体配置 -->
+        <!-- anon-匿名访问，authc-需要认证 -->
+        <property name="filterChainDefinitions">
+            <value>
+                /toPage/logon = anon
+                /shiro/login = anon
+                /logout=logout
+                /user/updatePassword=anon
+                /user//selectById/{id}=anon
+                /user//deleteById/{id}=anon
+                /** = authc
+
+            </value>
+        </property>
     </bean>
 </beans>

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/toPage")
 public class ToPageController {
+
     @GetMapping("/login")
     public String login() {
         return "login";
@@ -21,5 +22,10 @@ public class ToPageController {
     @GetMapping("/unauthorized")
     public String unauthorized() {
         return "unauthorized";
+    }
+
+    @GetMapping("/udpwd")
+    public String udpwd() {
+        return "udpwd";
     }
 }

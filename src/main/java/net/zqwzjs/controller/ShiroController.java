@@ -1,6 +1,5 @@
 package net.zqwzjs.controller;
 
-import net.zqwzjs.util.MD5Utils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -20,12 +19,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/shiro")
 public class ShiroController {
     @PostMapping("/login")
-    public String login(@RequestParam("username") String username, @RequestParam("password") String password) {
+    public String login(@RequestParam("username") String username, @RequestParam("password") String password,@RequestParam("rememberMe")boolean rememberMe) {
+//        System.out.println(rememberMe);
         Subject subject = SecurityUtils.getSubject();
         if (!subject.isAuthenticated()) {
 //            password = MD5Utils.encrypt(username, password);
-            System.out.println(password);
+//            System.out.println(password);
             UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+            if (rememberMe) {
+                token.setRememberMe(true);
+            } else {
+                token.setRememberMe(false);
+            }
             try {
                 subject.login(token);
             } catch (AuthenticationException e) {

@@ -33,6 +33,6 @@ public class MD5Utils {
 
     public static void main(String[] args) {
         //得到测试数据
-        System.out.println(MD5Utils.encrypt("12345","admin"));
+        System.out.println(MD5Utils.encrypt("12345","user"));
     }
 }

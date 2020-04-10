@@ -1,22 +1,35 @@
 package net.zqwzjs.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import tk.mybatis.mapper.annotation.KeySql;
+
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * @program: init1
  * @author: Mr.Zi
  * @create: 2020-04-08 10:37
  **/
+@JsonIgnoreProperties(value = {"handler"})
+@Table(name = "tb_user")
 public class User {
+    @Id
+    @KeySql(useGeneratedKeys = true)
     private Integer id;
     private String username;
     private String password;
-    private String salt;
 
-    public String getSalt() {
-        return salt;
+    private Role role;
+
+
+    public Role getRole() {
+        return role;
     }
 
-    public void setSalt(String salt) {
-        this.salt = salt;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public Integer getId() {
@@ -35,6 +48,7 @@ public class User {
         this.username = username;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -43,14 +57,13 @@ public class User {
         this.password = password;
     }
 
-
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", salt='" + salt + '\'' +
+                ", role=" + role +
                 '}';
     }
 }
